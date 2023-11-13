@@ -9,14 +9,14 @@ typedef struct id_list//structure definition
     int number;
     char *type;  
     struct id_list *next;//pointer to next element (node)
-} id_list;//type definition
+} t_id_list;//type definition
 
 typedef struct pozition_list
 {
     double latitude;
     double longitude;
     struct pozition_list *next;
-} pozition_list;
+} t_pozition_list;
 
 typedef struct date_time_list
 {
@@ -27,51 +27,62 @@ typedef struct date_time_list
     int month;
     int year;
     struct time_list *next;
-} time_list;
+} t_time_list;
 
 typedef struct value_list
 {
     double value;
     char *unit;
     struct value_list *next;
-} value_list;
+} t_value_list;
 
-void new_lists(id_list *id_list, pozition_list *pozition_list, time_list *time_list, value_list *value_list)
+void free_lists(t_id_list *id_list, t_pozition_list *pozition_list, t_time_list *time_list, t_value_list *value_list)
 {
-    id_list->label = NULL;
-    id_list->number = 0;
-    id_list->type = NULL;
-    id_list->next = NULL;
-
-    pozition_list->latitude = 0;
-    pozition_list->longitude = 0;
-    pozition_list->next = NULL;
-
-    time_list->hour = 0;
-    time_list->minute = 0;
-    time_list->second = 0;
-    time_list->day = 0;
-    time_list->month = 0;
-    time_list->year = 0;
-    time_list->next = NULL;
-
-    value_list->value = 0;
-    value_list->unit = NULL;
-    value_list->next = NULL;
+    t_id_list *ptr_id_list = id_list;
+    t_pozition_list *ptr_pozition_list = pozition_list;
+    t_time_list *ptr_time_list = time_list;
+    t_value_list *ptr_value_list = value_list; 
+    while (ptr_id_list != NULL)
+    {
+        free(ptr_id_list->label);
+        free(ptr_id_list->type);
+        id_list = id_list->next;
+        free(ptr_id_list);
+        ptr_id_list = id_list;
+    }
+    while (ptr_pozition_list != NULL)
+    {
+        pozition_list = pozition_list->next;
+        free(ptr_pozition_list);
+        ptr_pozition_list = pozition_list;
+    }
+    while (ptr_time_list != NULL)
+    {
+        time_list = time_list->next;
+        free(ptr_time_list);
+        ptr_time_list = time_list;
+    }
+    while (ptr_value_list != NULL)
+    {
+        value_list = value_list->next;
+        free(ptr_value_list->unit);
+        free(ptr_value_list);
+        ptr_value_list = value_list;
+    }
 }
 
-void data_load(char *file_name, id_list *id_list, pozition_list *pozition_list, time_list *time_list, value_list *value_list, int *data_count)
+void data_load(char *file_name, t_id_list *id_list, t_pozition_list *pozition_list, t_time_list *time_list, t_value_list *value_list, int *data_count)
 {
-    FILE *file;
-    file = fopen(file_name, "r");
-    if (file == NULL)
+    FILE *fptr;
+    fptr = fopen(file_name, "r");
+    if (fptr == NULL)
     {
         printf("Subor sa nepodarilo otvorit\n");
         exit(1);
     }
-    if ((id_list->label)!=NULL)
+    if (id_list != NULL)
     {
-
+        free_lists(id_list, pozition_list, time_list, value_list);
     }
     
     char *datastorage = NULL;
@@ -80,12 +91,17 @@ void data_load(char *file_name, id_list *id_list, pozition_list *pozition_list, 
     {
         printf("%s", datastorage);
     }
-    fclose(file);
+    fclose(fptr);
 }
 
 int main(void){
     printf("Zadajte príkaz:\n");
     char prikaz;
+    t_id_list *ptr_id_list = NULL;
+    t_pozition_list *ptr_pozition_list = NULL;
+    t_time_list *ptr_time_list = NULL;
+    t_value_list *ptr_value_list = NULL;
+    int data_count = 0;
     while (1)
     {
         scanf(" %c", &prikaz);
