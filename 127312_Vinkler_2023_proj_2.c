@@ -18,7 +18,23 @@ typedef struct pozition_list
     struct pozition_list *next;
 } pozition_list;
 
+typedef struct date_time_list
+{
+    int hour;
+    int minute;
+    int second;
+    int day;
+    int month;
+    int year;
+    struct time_list *next;
+} time_list;
 
+typedef struct value_list
+{
+    double value;
+    char *unit;
+    struct value_list *next;
+} value_list;
 
 
 int main(void){
