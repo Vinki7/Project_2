@@ -11,6 +11,12 @@ typedef struct id_list//structure definition
     struct id_list *next;//pointer to next element (node)
 } id_list;//type definition
 
+typedef struct pozition_list
+{
+    double latitude;
+    double longitude;
+    struct pozition_list *next;
+} pozition_list;
 
 
 
