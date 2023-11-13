@@ -36,6 +36,52 @@ typedef struct value_list
     struct value_list *next;
 } value_list;
 
+void new_lists(id_list *id_list, pozition_list *pozition_list, time_list *time_list, value_list *value_list)
+{
+    id_list->label = NULL;
+    id_list->number = 0;
+    id_list->type = NULL;
+    id_list->next = NULL;
+
+    pozition_list->latitude = 0;
+    pozition_list->longitude = 0;
+    pozition_list->next = NULL;
+
+    time_list->hour = 0;
+    time_list->minute = 0;
+    time_list->second = 0;
+    time_list->day = 0;
+    time_list->month = 0;
+    time_list->year = 0;
+    time_list->next = NULL;
+
+    value_list->value = 0;
+    value_list->unit = NULL;
+    value_list->next = NULL;
+}
+
+void data_load(char *file_name, id_list *id_list, pozition_list *pozition_list, time_list *time_list, value_list *value_list, int *data_count)
+{
+    FILE *file;
+    file = fopen(file_name, "r");
+    if (file == NULL)
+    {
+        printf("Subor sa nepodarilo otvorit\n");
+        exit(1);
+    }
+    if ((id_list->label)!=NULL)
+    {
+
+    }
+    
+    char *datastorage = NULL;
+    
+    while ((scanf("%s", datastorage)  != -1))
+    {
+        printf("%s", datastorage);
+    }
+    fclose(file);
+}
 
 int main(void){
     printf("Zadajte príkaz:\n");
