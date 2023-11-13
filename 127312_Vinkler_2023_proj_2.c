@@ -3,17 +3,15 @@
 #include <string.h>
 
 // linked list for write
-typedef struct write_list//structure definition
+typedef struct id_list//structure definition
 {
-    char *id;
-    char *pozition;
-    char *dimension;
-    int value;
-    int date;
-    int time;
-    
-    struct write_list *next;//pointer to next element (node)
-} write_list_t;//type definition
+    char *label;
+    int number;
+    char *type;  
+    struct id_list *next;//pointer to next element (node)
+} id_list;//type definition
+
+
 
 
 
