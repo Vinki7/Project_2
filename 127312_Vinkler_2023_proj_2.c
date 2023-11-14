@@ -73,7 +73,6 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
     *pozition_list = (t_pozition_list *)malloc(sizeof(t_pozition_list));
     *value_list = (t_value_list *)malloc(sizeof(t_value_list));
     *date_time_list = (t_date_time_list *)malloc(sizeof(t_date_time_list));
-    (*date_time_list)->next = NULL;
     char datastorage[100];
     int line_count = 0;
     int node_count = 0;
@@ -96,11 +95,12 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
             if (node_count == 0)
             {
                 new_id_node->next = NULL;
+                
             }else
             {
                 new_id_node->next = (*id_list);
+                (*id_list) = new_id_node;
             }
-            (*id_list) = new_id_node;
             break;
         
         case 1:
@@ -121,8 +121,8 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
             }else
             {
                 new_pozition_node->next = (*pozition_list);
+                (*pozition_list) = new_pozition_node;(*value_list);            
             }
-            (*pozition_list) = new_pozition_node;(*value_list);
             break;
 
         case 2:
@@ -137,8 +137,8 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
             }else
             {
                 new_value_node->next = (*value_list);
+                (*value_list) = new_value_node;
             }
-            (*value_list) = new_value_node;
             line_count++;
             break;
 
@@ -153,8 +153,8 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
             }else
             {
                 new_date_time_node->next = (*date_time_list);
-            }
-            (*date_time_list) = new_date_time_node;
+                (*date_time_list) = new_date_time_node;
+            }            
             break;
         }
         line_count++;
@@ -162,6 +162,79 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
     *data_count = node_count;
     printf("Nacitalo sa %d zaznamov\n", node_count);
     fclose(fptr);
+}
+
+void data_output(t_id_list *id_list, t_pozition_list *pozition_list, t_date_time_list *date_time_list, t_value_list *value_list, int data_count){
+    if (data_count == 0)
+    {
+        return;
+    }else
+    {
+        //list inversion
+        t_id_list *inverse_id_list = (t_id_list *)malloc(sizeof(t_id_list));
+        t_value_list *inverse_value_list = (t_value_list *)malloc(sizeof(t_value_list));
+        t_pozition_list *inverse_pozition_list = (t_pozition_list *)malloc(sizeof(t_pozition_list));
+        t_date_time_list *inverse_date_time_list = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+
+        for (int i = 0; i <= data_count; i++)
+        {
+            inverse_id_list->label[0] = id_list->label[0];
+            inverse_id_list->type[0] = id_list->type[0];
+            inverse_id_list->number = id_list->number;
+            inverse_value_list->unit[0] = value_list->unit[0];
+            inverse_value_list->unit[1] = value_list->unit[1];
+            inverse_value_list->value = value_list->value;
+            inverse_pozition_list->latitude = pozition_list->latitude;
+            inverse_pozition_list->longitude = pozition_list->longitude;
+            inverse_date_time_list->time = date_time_list->time;
+            inverse_date_time_list->date = date_time_list->date;
+            if (i == 0)
+            {
+                inverse_id_list->next = NULL;
+                inverse_value_list->next = NULL;
+                inverse_pozition_list->next = NULL;
+                inverse_date_time_list->next = NULL;
+            }else{
+                t_id_list *id_list_tmp = (t_id_list *)malloc(sizeof(t_id_list));
+                t_value_list *value_list_tmp = (t_value_list *)malloc(sizeof(t_value_list));
+                t_pozition_list *pozition_list_tmp = (t_pozition_list *)malloc(sizeof(t_pozition_list));
+                t_date_time_list *date_time_list_tmp = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+                //id_list
+                id_list_tmp->next = inverse_id_list;
+                inverse_id_list = id_list_tmp;
+                id_list = id_list->next;
+                //value_list
+                value_list_tmp->next = inverse_value_list;
+                inverse_value_list = value_list_tmp;
+                value_list = value_list->next;
+                //pozition_list
+                pozition_list_tmp->next = inverse_pozition_list;
+                inverse_pozition_list = pozition_list_tmp;
+                pozition_list = pozition_list->next;
+                //date_time_list
+                date_time_list_tmp->next = inverse_date_time_list;
+                inverse_date_time_list = date_time_list_tmp;
+                date_time_list = date_time_list->next;
+            }
+            
+        }
+        //print data
+        for (int i = 0; i < data_count; i++)
+        {
+            inverse_id_list = inverse_id_list->next;
+            inverse_value_list = inverse_value_list->next;
+            inverse_pozition_list = inverse_pozition_list->next;
+            inverse_date_time_list = inverse_date_time_list->next;
+            printf("%d.\nID: ", i+1);
+            printf("%c%d%c\t", (inverse_id_list->label[0]), inverse_id_list->number, (inverse_id_list->type[0]));
+            printf("%c%c\t%.3lf\n", (inverse_value_list->unit[0]), (inverse_value_list->unit[1]), (inverse_value_list->value));
+            printf("Poz: %.4lf\t%.4lf\n", inverse_pozition_list->latitude, inverse_pozition_list->longitude);
+            printf("DaC: %d\t%d\n", inverse_date_time_list->date, inverse_date_time_list->time);
+        }
+        
+    }
+    
+    
 }
 
 int main(void){
@@ -178,7 +251,7 @@ int main(void){
         switch (prikaz)
         {
         case 'v':
-            
+            data_output(head_id_list, head_pozition_list, head_time_list, head_value_list, data_count);
             break;
         
         case 'n':
@@ -202,8 +275,8 @@ int main(void){
             break;
         
         case 'k':
-            
-            break;
+            free_lists(&head_id_list, &head_pozition_list, &head_time_list, &head_value_list, data_count);
+            exit(0);
         default:
             printf("Zadali ste nedefinovaný príkaz, skúste to prosím znovu...\n");
         }
