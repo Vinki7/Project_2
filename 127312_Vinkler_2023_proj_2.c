@@ -32,42 +32,31 @@ typedef struct value_list
     struct value_list *next;
 } t_value_list;
 
-void free_lists(t_id_list *id_list, t_pozition_list *pozition_list, t_date_time_list *time_list, t_value_list *value_list)
+void free_lists(t_id_list **id_list, t_pozition_list **pozition_list, t_date_time_list **time_list, t_value_list **value_list, int data_count)
 {
-    t_id_list *ptr_id_list = id_list;
-    t_pozition_list *ptr_pozition_list = pozition_list;
-    t_date_time_list *ptr_time_list = time_list;
-    t_value_list *ptr_value_list = value_list; 
-    while (ptr_id_list != NULL)
+    //temporary pointers to node which will be deleted
+    t_id_list *id_list_tmp;
+    t_pozition_list *pozition_list_tmp;
+    t_date_time_list *time_list_tmp;
+    t_value_list *value_list_tmp;
+    for (int i = 0; i < data_count; i++)
     {
-        free(ptr_id_list->label);
-        free(ptr_id_list->type);
-        id_list = id_list->next;
-        free(ptr_id_list);
-        ptr_id_list = id_list;
-    }
-    while (ptr_pozition_list != NULL)
-    {
-        pozition_list = pozition_list->next;
-        free(ptr_pozition_list);
-        ptr_pozition_list = pozition_list;
-    }
-    while (ptr_time_list != NULL)
-    {
-        time_list = time_list->next;
-        free(ptr_time_list);
-        ptr_time_list = time_list;
-    }
-    while (ptr_value_list != NULL)
-    {
-        value_list = value_list->next;
-        free(ptr_value_list->unit);
-        free(ptr_value_list);
-        ptr_value_list = value_list;
+        id_list_tmp = (*id_list);//save pointer to next node
+        (*id_list) = (*id_list)->next;//move to next node
+        free(id_list_tmp);//free node
+        pozition_list_tmp = (*pozition_list);
+        (*pozition_list) = (*pozition_list)->next;
+        free(pozition_list_tmp);
+        time_list_tmp = (*time_list);
+        (*time_list) = (*time_list)->next;
+        free(time_list_tmp);
+        value_list_tmp = (*value_list);
+        (*value_list) = (*value_list)->next;
+        free(value_list_tmp);
     }
 }
 
-void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_list, t_date_time_list **time_list, t_value_list **value_list, int *data_count){
+void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_list, t_date_time_list **date_time_list, t_value_list **value_list, int *data_count){
     FILE *fptr;
     fptr = fopen(char_name, "r");
     if (fptr == NULL)
@@ -77,21 +66,23 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
     }
     if (*id_list != NULL)
     {
-        free_lists(*id_list, *pozition_list, *time_list, *value_list);
+        free_lists(id_list, pozition_list, date_time_list, value_list, *data_count);
     }
     //create heads of linked lists
-    t_id_list *head_id_node = (t_id_list *)malloc(sizeof(t_id_list));
-    t_pozition_list *head_pozition_node = (t_pozition_list *)malloc(sizeof(t_pozition_list));
-    t_value_list *head_value_node = (t_value_list *)malloc(sizeof(t_value_list));
-    t_date_time_list *head_time_node = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+    *id_list = (t_id_list *)malloc(sizeof(t_id_list));
+    *pozition_list = (t_pozition_list *)malloc(sizeof(t_pozition_list));
+    *value_list = (t_value_list *)malloc(sizeof(t_value_list));
+    *date_time_list = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+    (*date_time_list)->next = NULL;
     char datastorage[100];
     int line_count = 0;
+    int node_count = 0;
     //load data to lists
     while (fscanf(fptr, "%s", datastorage) != -1)
     {
         if (datastorage[0] == '$')
         {
-            data_count++;
+            node_count++;
             fscanf(fptr, "%s", datastorage);
             line_count = 0;
         }
@@ -102,8 +93,14 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
             new_id_node->label[0] = datastorage[0];
             new_id_node->type[0] = datastorage[4];
             new_id_node->number = atoi(&datastorage[1]);
-            new_id_node->next = head_id_node;
-            head_id_node = new_id_node;
+            if (node_count == 0)
+            {
+                new_id_node->next = NULL;
+            }else
+            {
+                new_id_node->next = (*id_list);
+            }
+            (*id_list) = new_id_node;
             break;
         
         case 1:
@@ -118,15 +115,52 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
             {
                 new_pozition_node->longitude *= -1;
             }
-            new_pozition_node->next = head_pozition_node;
-            head_pozition_node = new_pozition_node;
+            if (node_count == 0)
+            {
+                new_pozition_node->next = NULL;
+            }else
+            {
+                new_pozition_node->next = (*pozition_list);
+            }
+            (*pozition_list) = new_pozition_node;(*value_list);
             break;
-            
-        default:
+
+        case 2:
+            t_value_list *new_value_node = (t_value_list *)malloc(sizeof(t_value_list));
+            new_value_node->unit[0] = datastorage[0];
+            new_value_node->unit[1] = datastorage[1];
+            fscanf(fptr, "%s", datastorage);
+            new_value_node->value = atof(datastorage);
+            if (node_count == 0)
+            {
+                new_value_node->next = NULL;
+            }else
+            {
+                new_value_node->next = (*value_list);
+            }
+            (*value_list) = new_value_node;
+            line_count++;
+            break;
+
+        case 4:
+            t_date_time_list *new_date_time_node = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+            new_date_time_node->time = atoi(&datastorage[0]);
+            fscanf(fptr, "%s", datastorage);
+            new_date_time_node->date = atoi(datastorage);
+            if (node_count == 0)
+            {
+                new_date_time_node->next = NULL;
+            }else
+            {
+                new_date_time_node->next = (*date_time_list);
+            }
+            (*date_time_list) = new_date_time_node;
             break;
         }
         line_count++;
     }
+    *data_count = node_count;
+    printf("Nacitalo sa %d zaznamov\n", node_count);
     fclose(fptr);
 }
 
