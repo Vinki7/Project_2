@@ -164,6 +164,71 @@ void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_
     fclose(fptr);
 }
 
+void data_output(t_id_list *id_list, t_pozition_list *pozition_list, t_date_time_list *date_time_list, t_value_list *value_list, int data_count){
+    if (data_count == 0)
+    {
+        return;
+    }else
+    {
+        t_id_list *inverse_id_list = (t_id_list *)malloc(sizeof(t_id_list));
+        t_value_list *inverse_value_list = (t_value_list *)malloc(sizeof(t_value_list));
+        t_pozition_list *inverse_pozition_list = (t_pozition_list *)malloc(sizeof(t_pozition_list));
+        t_date_time_list *inverse_date_time_list = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+
+        for (int i = 0; i < data_count; i++)
+        {
+            inverse_id_list->label[0] = id_list->label[0];
+            inverse_id_list->type[0] = id_list->type[0];
+            inverse_id_list->number = id_list->number;
+            inverse_value_list->unit[0] = value_list->unit[0];
+            inverse_value_list->unit[1] = value_list->unit[1];
+            inverse_value_list->value = value_list->value;
+            inverse_pozition_list->latitude = pozition_list->latitude;
+            inverse_pozition_list->longitude = pozition_list->longitude;
+            inverse_date_time_list->time = date_time_list->time;
+            inverse_date_time_list->date = date_time_list->date;
+            if (i == 0)
+            {
+                inverse_id_list->next = NULL;
+                inverse_value_list->next = NULL;
+                inverse_pozition_list->next = NULL;
+                inverse_date_time_list->next = NULL;
+            }else{
+                t_id_list *id_list_tmp = (t_id_list *)malloc(sizeof(t_id_list));
+                t_value_list *value_list_tmp = (t_value_list *)malloc(sizeof(t_value_list));
+                t_pozition_list *pozition_list_tmp = (t_pozition_list *)malloc(sizeof(t_pozition_list));
+                t_date_time_list *date_time_list_tmp = (t_date_time_list *)malloc(sizeof(t_date_time_list));
+                //id_list
+                id_list_tmp->next = inverse_id_list;
+                inverse_id_list = id_list_tmp;
+                id_list = id_list->next;
+                //value_list
+                value_list_tmp->next = inverse_value_list;
+                inverse_value_list = value_list_tmp;
+                value_list = value_list->next;
+                //pozition_list
+                pozition_list_tmp->next = inverse_pozition_list;
+                inverse_pozition_list = pozition_list_tmp;
+                pozition_list = pozition_list->next;
+                //date_time_list
+                date_time_list_tmp->next = inverse_date_time_list;
+                inverse_date_time_list = date_time_list_tmp;
+                date_time_list = date_time_list->next;
+            }
+            
+        }
+        for (int i = 0; i < data_count; i++)
+        {
+            printf("%d.\nID: %s%d%s\t%s\t%s\n", i+1,inverse_id_list->label, inverse_id_list->number, inverse_id_list->type, inverse_value_list->unit, inverse_value_list->value);
+            printf("Poz: %.3lf\t%.3lf\n", inverse_pozition_list->latitude, inverse_pozition_list->longitude);
+            printf("DaC: %d\t%d\n", inverse_date_time_list->date, inverse_date_time_list->time);
+        }
+        
+    }
+    
+    
+}
+
 int main(void){
     printf("Zadajte príkaz:\n");
     char prikaz;
