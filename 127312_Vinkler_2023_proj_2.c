@@ -5,9 +5,9 @@
 // linked list for write
 typedef struct id_list//structure definition
 {
-    char *label;
+    char label[2];
     int number;
-    char *type;  
+    char type[2];  
     struct id_list *next;//pointer to next element (node)
 } t_id_list;//type definition
 
@@ -20,19 +20,15 @@ typedef struct pozition_list
 
 typedef struct date_time_list
 {
-    int hour;
-    int minute;
-    int second;
-    int day;
-    int month;
-    int year;
-    struct time_list *next;
+    int time;
+    int date;
+    struct date_time_list *next;
 } t_time_list;
 
 typedef struct value_list
 {
     double value;
-    char *unit;
+    char unit[3];
     struct value_list *next;
 } t_value_list;
 
@@ -71,25 +67,49 @@ void free_lists(t_id_list *id_list, t_pozition_list *pozition_list, t_time_list 
     }
 }
 
-void data_load(char *file_name, t_id_list *id_list, t_pozition_list *pozition_list, t_time_list *time_list, t_value_list *value_list, int *data_count)
-{
+void data_load(char *char_name, t_id_list **id_list, t_pozition_list **pozition_list, t_time_list **time_list, t_value_list **value_list, int *data_count){
     FILE *fptr;
-    fptr = fopen(file_name, "r");
+    fptr = fopen(char_name, "r");
     if (fptr == NULL)
     {
-        printf("Subor sa nepodarilo otvorit\n");
-        exit(1);
+        printf("Zaznamy neboli nacitane!\n");
+        return;
     }
-    if (id_list != NULL)
+    if (*id_list != NULL)
     {
-        free_lists(id_list, pozition_list, time_list, value_list);
+        free_lists(*id_list, *pozition_list, *time_list, *value_list);
     }
+    //create head of linked list
+    t_id_list *head_id_node = NULL;
+    head_id_node = (t_id_list *)malloc(sizeof(t_id_list));
+    //TODO: create head of linked lists
     
-    char *datastorage = NULL;
-    
-    while ((scanf("%s", datastorage)  != -1))
+    char datastorage[100];
+    int line_count = 0;
+    //load data to lists
+    while (fscanf(fptr, "%s", datastorage) != -1)
     {
-        printf("%s", datastorage);
+        if (datastorage[0] == '$')
+        {
+            data_count++;
+            fscanf(fptr, "%s", datastorage);
+            line_count = 0;
+        }
+        switch (line_count)
+        {
+        case 0:
+            t_id_list *new_id_node = (t_id_list *)malloc(sizeof(t_id_list));
+            new_id_node->label[0] = datastorage[0];
+            new_id_node->type[0] = datastorage[4];
+            new_id_node->number = atoi(&datastorage[1]);
+            new_id_node->next = head_id_node;
+            head_id_node = new_id_node;
+            break;
+        
+        default:
+            break;
+        }
+        line_count++;
     }
     fclose(fptr);
 }
@@ -97,10 +117,10 @@ void data_load(char *file_name, t_id_list *id_list, t_pozition_list *pozition_li
 int main(void){
     printf("Zadajte príkaz:\n");
     char prikaz;
-    t_id_list *ptr_id_list = NULL;
-    t_pozition_list *ptr_pozition_list = NULL;
-    t_time_list *ptr_time_list = NULL;
-    t_value_list *ptr_value_list = NULL;
+    t_id_list *head_id_list = NULL;
+    t_pozition_list *head_pozition_list = NULL;
+    t_time_list *head_time_list = NULL;
+    t_value_list *head_value_list = NULL;
     int data_count = 0;
     while (1)
     {
@@ -112,7 +132,7 @@ int main(void){
             break;
         
         case 'n':
-            
+            data_load("dataloger_V2.txt", &head_id_list, &head_pozition_list, &head_time_list, &head_value_list, &data_count);
             break;
 
         case 'c':
