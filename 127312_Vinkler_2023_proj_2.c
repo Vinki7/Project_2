@@ -30,17 +30,22 @@ typedef struct data_log
     struct data_log *next;
 } t_data_log;
 
+void free_node(t_data_log **head_datalog){
+    //temporary pointers to node which will be deleted
+    t_data_log *datalog_tmp = (*head_datalog);
+    (*head_datalog) = (*head_datalog)->next;
+    //clearing memory
+    free(datalog_tmp->id);
+    free(datalog_tmp->pozition);
+    free(datalog_tmp);
+}
+
 void free_lists(t_data_log **head_datalog, int data_count){
     //temporary pointers to node which will be deleted
-    t_data_log *datalog_tmp;
 
     for (int i = 0; i < data_count; i++)
     {
-        datalog_tmp = (*head_datalog);
-        (*head_datalog) = (*head_datalog)->next;
-        free(datalog_tmp->id);
-        free(datalog_tmp->pozition);
-        free(datalog_tmp);
+        free_node(head_datalog);
     }
     *head_datalog = NULL;  // Set the head to NULL after freeing all nodes
 }
@@ -194,6 +199,46 @@ void add_log(t_data_log **head_datalog, int *data_count){
     }
 }
 
+void remove_log(t_data_log **head_datalog, int *data_count){
+    if ((*head_datalog) == NULL)//if list is empty - data_load function was not called yet
+    {
+        return;//we can't remove node from empty list
+    }
+    
+    char selected_id[6];
+
+    scanf("%s", selected_id);
+    t_id_list *selected_id_struct = (t_id_list *)malloc(sizeof(t_id_list));//new node
+    selected_id_struct->label[0] = selected_id[0];
+    selected_id_struct->number = atoi(&selected_id[1]);
+    selected_id_struct->type[0] = selected_id[4];
+
+    t_data_log *datalog_curr_ptr = (*head_datalog); //temporary pointer to head of list
+    t_data_log *datalog_prev_ptr = NULL;
+
+    while(datalog_curr_ptr != NULL)
+    {
+        if (strcmp(selected_id_struct->label, datalog_curr_ptr->id->label) == 0 && selected_id_struct->number == datalog_curr_ptr->id->number && strcmp(selected_id_struct->type, datalog_curr_ptr->id->type) == 0)
+        {
+            if (datalog_prev_ptr == NULL)//if first node fulfills condition
+            {
+                *head_datalog = datalog_curr_ptr->next;
+                free_node(&datalog_curr_ptr);
+            }else{
+                datalog_prev_ptr->next = datalog_curr_ptr->next;
+                free_node(&datalog_curr_ptr);
+                datalog_curr_ptr = datalog_prev_ptr->next;
+            }
+            printf("Zaznam pre ID: %s bol vymazany.\n", selected_id);
+            (*data_count)--;
+        }else{
+            datalog_prev_ptr = datalog_curr_ptr;
+            datalog_curr_ptr = datalog_curr_ptr->next;
+        }
+    }
+    free(selected_id_struct);
+}
+
 int main(void){
     printf("Zadajte príkaz:\n");
     char command;
@@ -217,7 +262,7 @@ int main(void){
             break;
 
         case 'z':
-            
+            remove_log(&head_datalog, &data_count);
             break;
 
         case 'u':
