@@ -90,6 +90,7 @@ void data_load(char *file_name, t_data_log **head_datalog,int *data_count){
     if ((*head_datalog) != 0)
     {
         free_lists(head_datalog, *data_count);
+        *data_count = 0;
     }
     while (fscanf(fptr, "%s", datastorage) != -1)
     {
@@ -199,6 +200,63 @@ void add_log(t_data_log **head_datalog, int *data_count){
     }
 }
 
+void swap_logs(t_data_log **head_datalog, int data_count){
+    int first_pozition, second_pozition;
+    int i;
+    if (*head_datalog == NULL)
+    {
+        return;
+    }
+    
+    scanf("%d %d", &first_pozition, &second_pozition);
+    if (first_pozition > data_count || first_pozition < 1 || second_pozition > data_count || second_pozition < 1 || first_pozition == second_pozition)
+    {
+        return;
+    }
+    t_data_log *first_node_prev = (*head_datalog);
+    t_data_log *second_node_prev = (*head_datalog);
+    
+    for (i = 0; i < data_count; i++)
+    {
+        if (i < first_pozition-2)
+        {
+            first_node_prev = first_node_prev->next;
+        }
+        if (i < second_pozition-2)
+        {
+            second_node_prev = second_node_prev->next;
+        }
+    }
+    if (first_pozition == 1)
+    {
+        t_data_log *tmp_node = (*head_datalog)->next;
+        t_data_log *second_node = second_node_prev->next;
+        (*head_datalog)->next = second_node_prev->next->next;
+        second_node_prev->next = (*head_datalog);
+        second_node->next = tmp_node;
+        (*head_datalog) = second_node;
+    }else if (second_pozition == 1)
+    {
+        t_data_log *tmp_node = (*head_datalog)->next;
+        t_data_log *first_node = first_node_prev->next;
+        (*head_datalog)->next = first_node_prev->next->next;
+        first_node_prev->next = (*head_datalog);
+        first_node->next = tmp_node;
+        (*head_datalog) = first_node;
+    }else
+    {
+        t_data_log *second_node = second_node_prev->next;
+        t_data_log *first_node = first_node_prev->next;
+
+        first_node_prev->next = second_node;
+        second_node_prev->next = first_node;
+
+        t_data_log *tmp_node = second_node->next;
+        second_node->next = first_node->next;
+        first_node->next = tmp_node;
+    }
+}
+
 void remove_log(t_data_log **head_datalog, int *data_count){
     if ((*head_datalog) == NULL)//if list is empty - data_load function was not called yet
     {
@@ -270,7 +328,7 @@ int main(void){
             break;
         
         case 'r':
-            
+            swap_logs(&head_datalog, data_count);
             break;
         
         case 'k':
