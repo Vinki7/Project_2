@@ -213,6 +213,12 @@ void swap_logs(t_data_log **head_datalog, int data_count){
     {
         return;
     }
+    if (first_pozition > second_pozition)
+    {
+        int tmp = first_pozition;
+        first_pozition = second_pozition;
+        second_pozition = tmp;
+    }
     t_data_log *first_node_prev = (*head_datalog);
     t_data_log *second_node_prev = (*head_datalog);
     
@@ -235,14 +241,6 @@ void swap_logs(t_data_log **head_datalog, int data_count){
         second_node_prev->next = (*head_datalog);
         second_node->next = tmp_node;
         (*head_datalog) = second_node;
-    }else if (second_pozition == 1)
-    {
-        t_data_log *tmp_node = (*head_datalog)->next;
-        t_data_log *first_node = first_node_prev->next;
-        (*head_datalog)->next = first_node_prev->next->next;
-        first_node_prev->next = (*head_datalog);
-        first_node->next = tmp_node;
-        (*head_datalog) = first_node;
     }else
     {
         t_data_log *second_node = second_node_prev->next;
@@ -297,6 +295,49 @@ void remove_log(t_data_log **head_datalog, int *data_count){
     free(selected_id_struct);
 }
 
+void data_sort(t_data_log **head_datalog, int data_count){
+    if ((*head_datalog) == NULL || data_count == 1)//if list is empty - data_load function was not called yet
+    {
+        printf("Chyba usporiadania\n");
+        return;//we can't remove node from empty list
+    }
+
+    t_data_log *curr_ptr;
+    t_data_log *next_ptr;
+    t_data_log *prev_ptr;
+    int i, j;
+    int unsorted = data_count;
+    
+    for (i = 0; i < unsorted; i++){
+        //sorting by date & time
+        prev_ptr = NULL;
+        curr_ptr = (*head_datalog);
+        next_ptr = (*head_datalog)->next;
+
+        for (j = 0; j < (unsorted-1); j++){//unsorted-1 because we need to stop one node before the end of list
+            if ((curr_ptr->date >= next_ptr->date) || (curr_ptr->date == next_ptr->date &&curr_ptr->time > next_ptr->time)){
+                if (prev_ptr == NULL){//if first node fulfills condition
+                    *head_datalog = next_ptr;
+                } else {
+                    prev_ptr->next = next_ptr;
+                }
+
+                curr_ptr->next = next_ptr->next;
+                next_ptr->next = curr_ptr;
+
+                prev_ptr = next_ptr;
+                next_ptr = curr_ptr->next;
+            } else {
+                //shift pointers
+                prev_ptr = curr_ptr;
+                curr_ptr = next_ptr;
+                next_ptr = next_ptr->next;
+            }
+        }
+        unsorted--;
+    }
+}
+
 int main(void){
     printf("Zadajte príkaz:\n");
     char command;
@@ -324,7 +365,7 @@ int main(void){
             break;
 
         case 'u':
-            
+            data_sort(&head_datalog, data_count);
             break;
         
         case 'r':
