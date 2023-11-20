@@ -57,26 +57,25 @@ void id_load(t_data_log **new_datalog_node, char *datastorage){
 }
 
 void pozition_load(t_data_log **new_datalog_node, char *datastorage){
-    if (datastorage[0] == '-')
+    int i = 0;
+    while (1)
+    {
+        if ((datastorage[i] == '+' || datastorage[i] == '-') && i == 0)
         {
-            (*new_datalog_node)->pozition->latitude = atof(&datastorage[1])*-1;
-            (*new_datalog_node)->pozition->operator_lat[0] = '\0';
-        }else
-        {
-            (*new_datalog_node)->pozition->latitude = atof(&datastorage[0]);
-            (*new_datalog_node)->pozition->operator_lat[0] = datastorage[0];
+            (*new_datalog_node)->pozition->operator_lat[0] = datastorage[i];
             (*new_datalog_node)->pozition->operator_lat[1] = '\0';
-        }
-        if (datastorage[8] == '-')
+            (*new_datalog_node)->pozition->latitude = atof(&datastorage[i+1]);
+            i++;
+        } else if ((datastorage[i] == '+' || datastorage[i] == '-') && i > 0)
         {
-            (*new_datalog_node)->pozition->longitude = atof(&datastorage[9])*-1;
-            (*new_datalog_node)->pozition->operator_long[0] = '\0';
-        }else
-        {
-            (*new_datalog_node)->pozition->longitude = atof(&datastorage[8]);
-            (*new_datalog_node)->pozition->operator_long[0] = datastorage[0];
+            (*new_datalog_node)->pozition->operator_long[0] = datastorage[i];
             (*new_datalog_node)->pozition->operator_long[1] = '\0';
+            (*new_datalog_node)->pozition->longitude = atof(&datastorage[i+1]);
+            break;
+        } else {
+            i++;
         }
+    }
 }
 
 void data_load(char *file_name, t_data_log **head_datalog,int *data_count){
@@ -145,7 +144,8 @@ void data_output(t_data_log *head_datalog ,int data_count){
         {
             printf("%d:\n", i+1);
             printf("ID: %c%d%c\t%s\t%.2lf\n", datalog_ptr->id->label[0], datalog_ptr->id->number, datalog_ptr->id->type[0], datalog_ptr->unit, datalog_ptr->value);
-            printf("Poz: %s%.4lf\t%s%.4lf\n", head_datalog->pozition->operator_lat,datalog_ptr->pozition->latitude, head_datalog->pozition->operator_long,datalog_ptr->pozition->longitude);
+            printf("Poz: %c%.4lf\t", head_datalog->pozition->operator_lat[0],datalog_ptr->pozition->latitude);
+            printf("%c%.4lf\n",  head_datalog->pozition->operator_long[0],datalog_ptr->pozition->longitude);
             printf("DaC: %d\t%d\n", datalog_ptr->date, datalog_ptr->time);
             datalog_ptr = datalog_ptr->next;
         }
@@ -188,7 +188,12 @@ void add_log(t_data_log **head_datalog, int *data_count){
         }
         datalog_ptr->next = new_datalog_node; //add new node to the end of list
         (*data_count)++;
-    }else{
+    }else if (pozition_in_list == 1){
+        new_datalog_node->next = (*head_datalog);
+        (*head_datalog) = new_datalog_node;
+        (*data_count)++;
+        return;
+    } else {
         int i;
         for (i = 0; i < (pozition_in_list-2); i++)//pozition_in_list-2 because we need to transfer order number to index logic and stop one node before the node we want to insert
         {
