@@ -341,6 +341,7 @@ void data_sort(t_data_log **head_datalog, int data_count){
         }
         unsorted--;
     }
+    printf("Spájaný zoznam bol usporiadaný.\n");
 }
 
 int main(void){
