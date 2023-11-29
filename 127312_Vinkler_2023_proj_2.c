@@ -325,7 +325,7 @@ void data_sort(t_data_log **head_datalog, int data_count){
         next_ptr = (*head_datalog)->next;
 
         for (j = 0; j < (unsorted-1); j++){//unsorted-1 because we need to stop one node before the end of list
-            if ((curr_ptr->date >= next_ptr->date) || (curr_ptr->date == next_ptr->date && curr_ptr->time >= next_ptr->time)){
+            if ((curr_ptr->date > next_ptr->date) || (curr_ptr->date == next_ptr->date && curr_ptr->time > next_ptr->time)){
                 if (prev_ptr == NULL){//if first node fulfills condition
                     *head_datalog = next_ptr;
                 } else {
@@ -334,7 +334,6 @@ void data_sort(t_data_log **head_datalog, int data_count){
 
                 curr_ptr->next = next_ptr->next;
                 next_ptr->next = curr_ptr;
-
                 prev_ptr = next_ptr;
                 next_ptr = curr_ptr->next;
             } else {
@@ -388,7 +387,7 @@ int main(void){
             exit(0);
             break;
         }    
-        printf("Zadajte dalsi prikaz...\n");
+        printf("Zadajte ďalší príkaz...\n");
     }
     return 0;
 }
