@@ -86,7 +86,7 @@ void data_load(char *file_name, t_data_log **head_datalog,int *data_count){
         return;
     }
     char datastorage[50];
-    if ((*head_datalog) != 0)
+    if ((*head_datalog) != NULL)
     {
         free_lists(head_datalog, *data_count);
         *data_count = 0;
@@ -153,10 +153,6 @@ void data_output(t_data_log *head_datalog ,int data_count){
 }
 
 void add_log(t_data_log **head_datalog, int *data_count){
-    if ((*head_datalog) == NULL)//if list is empty - data_load function was not called yet
-    {
-        return;//we can't add node to empty list
-    }
     int pozition_in_list;
     scanf("%d", &pozition_in_list);
     t_data_log *new_datalog_node = (t_data_log *)malloc(sizeof(t_data_log));//new node
@@ -177,6 +173,14 @@ void add_log(t_data_log **head_datalog, int *data_count){
     scanf("%d", &new_datalog_node->time);
     scanf("%d", &new_datalog_node->date);
     
+    if ((*head_datalog) == NULL)//if list is empty - data_load function was not called yet
+    {
+        new_datalog_node->next = NULL;
+        (*head_datalog) = new_datalog_node;
+        (*data_count)++;
+        return;
+    }
+
     //inserting node to list
     t_data_log *datalog_ptr = (*head_datalog); //temporary pointer to head of list
     if (pozition_in_list > *data_count || pozition_in_list < 1)
@@ -304,7 +308,7 @@ void data_sort(t_data_log **head_datalog, int data_count){
     if ((*head_datalog) == NULL || data_count == 1)//if list is empty - data_load function was not called yet
     {
         printf("Chyba usporiadania\n");
-        return;//we can't remove node from empty list
+        return;//we can't sort nodes in list with 0/1 nodes
     }
 
     t_data_log *curr_ptr;
@@ -313,6 +317,7 @@ void data_sort(t_data_log **head_datalog, int data_count){
     int i, j;
     int unsorted = data_count;
     
+    //bubble sorting
     for (i = 0; i < unsorted; i++){
         //sorting by date & time
         prev_ptr = NULL;
@@ -320,7 +325,7 @@ void data_sort(t_data_log **head_datalog, int data_count){
         next_ptr = (*head_datalog)->next;
 
         for (j = 0; j < (unsorted-1); j++){//unsorted-1 because we need to stop one node before the end of list
-            if ((curr_ptr->date >= next_ptr->date) || (curr_ptr->date == next_ptr->date &&curr_ptr->time > next_ptr->time)){
+            if ((curr_ptr->date >= next_ptr->date) || (curr_ptr->date == next_ptr->date && curr_ptr->time >= next_ptr->time)){
                 if (prev_ptr == NULL){//if first node fulfills condition
                     *head_datalog = next_ptr;
                 } else {
@@ -345,7 +350,7 @@ void data_sort(t_data_log **head_datalog, int data_count){
 }
 
 int main(void){
-    printf("Zadajte príkaz:\n");
+    printf("Zadajte prikaz:\n");
     char command;
     t_data_log *head_datalog = NULL;
     int data_count = 0;
@@ -381,10 +386,9 @@ int main(void){
         case 'k':
             free_lists(&head_datalog, data_count);
             exit(0);
-        default:
-            printf("Zadali ste nedefinovaný príkaz, skúste to prosím znovu...\n");
-        }
-        printf("Zadajte ďalší príkaz...\n");
+            break;
+        }    
+        printf("Zadajte dalsi prikaz...\n");
     }
     return 0;
 }
